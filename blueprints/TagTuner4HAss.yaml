@@ -49,6 +49,12 @@ blueprint:
           selector:
             boolean:
           default: false
+        triple_click_shuffle:
+          name: Triple Click To Shuffle
+          description: shuffle instead of previous track
+          selector:
+            boolean:
+          default: false
         default_volume_set:
           name: Default volume
           description: set on tag scanned
@@ -92,7 +98,7 @@ blueprint:
         version:
           name: Blueprint version
           description: just for you to know
-          default: 250308
+          default: 250520
         notify_version:
           name: Notify about version
           description: mismatch of automation vs yaml firmware
@@ -170,6 +176,7 @@ variables:
     {%if shuffle_config == true
     or uri[-8:]=='/shuffle'
     %}{{true}}{%else%}{{false}}{%endif%}
+  triple_click_shuffle: !input triple_click_shuffle
   max_volume: !input max_volume
   notify_version: !input notify_version
   blprnt_version: !input version
@@ -364,11 +371,25 @@ actions:
       - conditions:
           - condition: template
             value_template: '{{ action == "clickTriple" }}'
+          - condition: template
+            value_template: "{{ triple_click_shuffle == true }}"
+        sequence:
+          - action: media_player.shuffle_set
+            target:
+              entity_id: !input httpplayer
+            data:
+              shuffle: true
+        alias: clickTripleShuffle
+      - conditions:
+          - condition: template
+            value_template: '{{ action == "clickTriple" }}'
+          - condition: template
+            value_template: "{{ triple_click_shuffle == false }}"
         sequence:
           - action: media_player.media_previous_track
             target:
               entity_id: !input httpplayer
-        alias: clickTriple
+        alias: clickTriplePrevious
       - conditions:
           - condition: template
             value_template: '{{ action == "clickDouble" }}'
